@@ -172,7 +172,7 @@ You will be provided with a context and your task is to return a well defined us
 - Please return just the user question. You dont need to answer the question. 
 - Your only task is to form a question which captures the context provided to you.
 - Make sure to specify the type of the entity along with the name."""})
-    response = openai.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="gpt-4o", messages= messages
     )
     print("Final Response:")
