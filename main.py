@@ -3,7 +3,7 @@ import openai
 import json
 
 api_key= st.text_input("What is your openai api key to use")
-client = openai.OpenAI(api_key=api_key)
+openai.api_key= api_key
 # Define the initial system message
 system_message = {
     "role": "system",
@@ -172,7 +172,7 @@ You will be provided with a context and your task is to return a well defined us
 - Please return just the user question. You dont need to answer the question. 
 - Your only task is to form a question which captures the context provided to you.
 - Make sure to specify the type of the entity along with the name."""})
-    response = client.chat.completions.create(
+    response = openai.chat.completions.create(
         model="gpt-4o", messages= messages
     )
     print("Final Response:")
@@ -198,7 +198,7 @@ st.title("Finance Domain Chat Assistant")
 if messages==[]:
     messages = [system_message]
     while messages:
-        response = client.ChatCompletion.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=messages,
             tools= tools,
