@@ -2,6 +2,8 @@ import streamlit as st
 import openai
 import json
 
+api_key= st.text_input("What is your openai api key to use")
+client = openai.OpenAI(api_key=api_key)
 # Define the initial system message
 system_message = {
     "role": "system",
@@ -196,9 +198,6 @@ st.title("Finance Domain Chat Assistant")
 if messages==[]:
     messages = [system_message]
     while messages:
-        api_key= st.text_input("What is your openai api key to use")
-        client = openai.OpenAI(api_key=api_key)
-
         response = client.ChatCompletion.create(
             model="gpt-4",
             messages=messages,
