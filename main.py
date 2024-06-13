@@ -185,19 +185,17 @@ if api_key:
 
     def ask_for_followup(messages,assistant_question):
         user_input= st.text_input(assistant_question,key=np.random.randint(low=100001,high=200000,size=1))
-        while user_input:
+        if user_input:
             messages.append({"role":"assistant","content":assistant_question})
             messages.append({"role":"user","content":user_input})
             return messages
-        time.sleep(5)
 
     def ask_user(messages):
         user_input= st.text_input("What can I help with today?",key=np.random.randint(low=1,high=100000,size=1))
-        while user_input:
+        if user_input:
             messages.append({"role":"assistant","content":"What can I help with today?"})
             messages.append({"role":"user","content":user_input})
             return messages
-        time.sleep(5)
     # Streamlit app layout
     st.title("Finance Domain Chat Assistant")
 
