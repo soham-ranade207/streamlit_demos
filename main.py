@@ -224,16 +224,17 @@ if api_key:
             if response_message.tool_calls:
                 function_name = response_message.tool_calls[0].function.name
                 function_params = json.loads(response_message.tool_calls[0].function.arguments)
-                st.write(function_name)
-                st.write(function_params)
                 if "messages" in function_params:
                     function_params["messages"] = st.session_state["messages"]
-                
+                st.write(function_name)
+                st.write(function_params)
                 if function_name == "stop_processing":
-                    final_question, st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
+                    final_question, messages = eval(f"{function_name}(**{function_params})")
+                    st.session_state["messages"]=messages
                     st.write(final_question)
                     # Here, you would send `final_question` to your model
                 else:
-                    st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
+                    messages = eval(f"{function_name}(**{function_params})")
+                    st.session_state["messages"]=messages
             logging.info(f"current_message_stream:{st.session_state['messages']}")
 
