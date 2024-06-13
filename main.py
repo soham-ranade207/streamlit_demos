@@ -224,7 +224,8 @@ if api_key:
             if response_message.tool_calls:
                 function_name = response_message.tool_calls[0].function.name
                 function_params = json.loads(response_message.tool_calls[0].function.arguments)
-                
+                st.write(function_name)
+                st.write(function_params)
                 if "messages" in function_params:
                     function_params["messages"] = st.session_state["messages"]
                 
