@@ -236,5 +236,5 @@ if api_key:
                 else:
                     messages = eval(f"{function_name}(**{function_params})")
                     st.session_state["messages"]=messages
-            logging.info(f"current_message_stream:{st.session_state['messages']}")
+            logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
 
