@@ -1,6 +1,7 @@
 import streamlit as st
 import openai
 import json
+import numpy as np
 
 api_key= st.text_input("What is your openai api key to use")
 if api_key:
@@ -182,13 +183,13 @@ if api_key:
         return final_question, messages
 
     def ask_for_followup(messages,assistant_question):
-        user_input= st.text_input(assistant_question)
+        user_input= st.text_input(assistant_question,key=np.random.randint(low=100001,high=200000,size=1))
         messages.append({"role":"assistant","content":assistant_question})
         messages.append({"role":"user","content":user_input})
         return messages
 
     def ask_user(messages):
-        user_input= st.text_input("What can I help with today?")
+        user_input= st.text_input("What can I help with today?",key=np.random.randint(low=1,high=100000,size=1))
         messages.append({"role":"assistant","content":"What can I help with today?"})
         messages.append({"role":"user","content":user_input})
         return messages
@@ -200,7 +201,7 @@ if api_key:
         messages = [system_message]
         while messages:
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=messages,
                 tools= tools,
                 tool_choice="required"
