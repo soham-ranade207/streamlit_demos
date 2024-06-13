@@ -5,6 +5,10 @@ import numpy as np
 import time
 
 api_key= st.text_input("What is your openai api key to use")
+
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
+
 if api_key:
     client= openai.OpenAI(api_key=api_key)
     # Define the initial system message
@@ -164,9 +168,6 @@ if api_key:
         }
     ]
 
-    # Initialize the messages list with the system message
-    messages = []
-
     # Define functions for interaction
     def stop_processing(messages):
         messages.append({"role":"user","content":"""
@@ -178,7 +179,6 @@ if api_key:
         response = client.chat.completions.create(
             model="gpt-4o", messages= messages
         )
-        print("Final Response:")
         final_question=json.dumps(response.choices[0].message.content,indent=2)
         messages=[]
         return final_question, messages
@@ -197,15 +197,17 @@ if api_key:
             messages.append({"role":"user","content":user_input})
             return messages
     # Streamlit app layout
+    
+    
     st.title("Finance Domain Chat Assistant")
 
     # User input for the question
-    if messages==[]:
-        messages = [system_message]
-        while messages:
+    if st.session_state["messages"]==[]:
+        st.session_state["messages"] = [system_message]
+        while st.session_state["messages"]:
             response = client.chat.completions.create(
                 model="gpt-4o",
-                messages=messages,
+                messages=st.session_state["messages"],
                 tools= tools,
                 tool_choice="required"
             )
@@ -216,12 +218,12 @@ if api_key:
                 function_params = json.loads(response_message.tool_calls[0].function.arguments)
                 
                 if "messages" in function_params:
-                    function_params["messages"] = messages
+                    function_params["messages"] = st.session_state["messages"]
                 
                 if function_name == "stop_processing":
-                    final_question, messages = eval(f"{function_name}(**{function_params})")
+                    final_question, st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
                     st.write(final_question)
                     # Here, you would send `final_question` to your model
                 else:
-                    messages = eval(f"{function_name}(**{function_params})")
+                    st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
 
