@@ -3,6 +3,14 @@ import openai
 import json
 import numpy as np
 import time
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # Set the log level to INFO
+    handlers=[
+        logging.StreamHandler()  # Log messages to the console as well
+    ]
+)
 
 api_key= st.text_input("What is your openai api key to use")
 
@@ -226,4 +234,5 @@ if api_key:
                     # Here, you would send `final_question` to your model
                 else:
                     st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
+            logging.info(f"current_message_stream:{st.session_state['messages']}")
 
