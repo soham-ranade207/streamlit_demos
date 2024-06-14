@@ -188,7 +188,8 @@ if api_key:
             model="gpt-4o", messages=messages
         )
         final_question = json.dumps(response.choices[0].message.content, indent=2)
-        return final_question
+        messages=[]
+        return final_question, messages
 
     def ask_for_followup(messages, assistant_question):
         user_input = st.text_input(assistant_question, key=np.random.randint(low=100001, high=200000, size=1))
@@ -208,10 +209,10 @@ if api_key:
     st.title("Finance Domain Chat Assistant")
 
     # User input for the question
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = [system_message]
-
+    
     while True:
+        if "messages" not in st.session_state or st.session_state["messages"]==[]:
+            st.session_state["messages"] = [system_message]
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=st.session_state["messages"],
@@ -224,6 +225,7 @@ if api_key:
             function_params = json.loads(response_message.tool_calls[0].function.arguments)
             if "messages" in function_params:
                 function_params["messages"] = st.session_state["messages"]
+                logging.info(f"current_message_stream:{st.write(function_params['messages'])}")
             st.write(function_name)
             st.write(function_params)
             if function_name == "stop_processing":
