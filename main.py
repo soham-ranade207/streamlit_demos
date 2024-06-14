@@ -13,9 +13,6 @@ logging.basicConfig(
 )
 
 api_key= st.text_input("What is your openai api key to use")
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
-
 if api_key:
     client= openai.OpenAI(api_key=api_key)
     # Define the initial system message
