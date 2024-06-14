@@ -13,7 +13,6 @@ logging.basicConfig(
 )
 
 api_key= st.text_input("What is your openai api key to use")
-client= openai.OpenAI(api_key=api_key)
 if 'messages' not in st.session_state:
     st.session_state['messages'] = []
 
@@ -178,63 +177,63 @@ if api_key:
 
     # Define functions for interaction
 
-system_message = {"role": "system", "content": "You are a helpful AI assistant for the finance domain."}
 
-def stop_processing(messages):
-    messages.append({"role": "user", "content": """
-    You are a helpful LLM.
-    You will be provided with a context and your task is to return a well-defined user question which will summarize the context perfectly.
-    - Please return just the user question. You don't need to answer the question.
-    - Your only task is to form a question which captures the context provided to you.
-    - Make sure to specify the type of the entity along with the name.
-    """})
-    response = client.chat.completions.create(
-        model="gpt-4o", messages=messages
-    )
-    final_question = json.dumps(response.choices[0].message.content, indent=2)
-    return final_question
 
-def ask_for_followup(messages, assistant_question):
-    user_input = st.text_input(assistant_question, key=np.random.randint(low=100001, high=200000, size=1))
-    if st.button("Submit"):
-        messages.append({"role": "assistant", "content": assistant_question})
-        messages.append({"role": "user", "content": user_input})
-        return messages
+    def stop_processing(messages):
+        messages.append({"role": "user", "content": """
+        You are a helpful LLM.
+        You will be provided with a context and your task is to return a well-defined user question which will summarize the context perfectly.
+        - Please return just the user question. You don't need to answer the question.
+        - Your only task is to form a question which captures the context provided to you.
+        - Make sure to specify the type of the entity along with the name.
+        """})
+        response = client.chat.completions.create(
+            model="gpt-4o", messages=messages
+        )
+        final_question = json.dumps(response.choices[0].message.content, indent=2)
+        return final_question
 
-def ask_user(messages):
-    user_input = st.text_input("What can I help with today?", key=np.random.randint(low=1, high=100000, size=1))
-    if st.button("Submit"):
-        messages.append({"role": "assistant", "content": "What can I help with today?"})
-        messages.append({"role": "user", "content": user_input})
-        return messages
+    def ask_for_followup(messages, assistant_question):
+        user_input = st.text_input(assistant_question, key=np.random.randint(low=100001, high=200000, size=1))
+        if st.button("Submit"):
+            messages.append({"role": "assistant", "content": assistant_question})
+            messages.append({"role": "user", "content": user_input})
+            return messages
 
-# Streamlit app layout
-st.title("Finance Domain Chat Assistant")
+    def ask_user(messages):
+        user_input = st.text_input("What can I help with today?", key=np.random.randint(low=1, high=100000, size=1))
+        if st.button("Submit"):
+            messages.append({"role": "assistant", "content": "What can I help with today?"})
+            messages.append({"role": "user", "content": user_input})
+            return messages
 
-# User input for the question
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [system_message]
+    # Streamlit app layout
+    st.title("Finance Domain Chat Assistant")
 
-while True:
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=st.session_state["messages"],
-        tools=tools,
-        tool_choice="required"
-    )
-    response_message = response.choices[0].message
-    if response_message.tool_calls:
-        function_name = response_message.tool_calls[0].function.name
-        function_params = json.loads(response_message.tool_calls[0].function.arguments)
-        if "messages" in function_params:
-            function_params["messages"] = st.session_state["messages"]
-        st.write(function_name)
-        st.write(function_params)
-        if function_name == "stop_processing":
-            final_question = eval(f"{function_name}(**{function_params})")
-            st.write(final_question)
-            # Here, you would send `final_question` to your model
-            break
-        else:
-            st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
-    logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
+    # User input for the question
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [system_message]
+
+    while True:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=st.session_state["messages"],
+            tools=tools,
+            tool_choice="required"
+        )
+        response_message = response.choices[0].message
+        if response_message.tool_calls:
+            function_name = response_message.tool_calls[0].function.name
+            function_params = json.loads(response_message.tool_calls[0].function.arguments)
+            if "messages" in function_params:
+                function_params["messages"] = st.session_state["messages"]
+            st.write(function_name)
+            st.write(function_params)
+            if function_name == "stop_processing":
+                final_question = eval(f"{function_name}(**{function_params})")
+                st.write(final_question)
+                # Here, you would send `final_question` to your model
+                break
+            else:
+                st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
+        logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
