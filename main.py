@@ -263,7 +263,7 @@ if api_key:
         messages= st.session_state["messages"]
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role":"user","content":"tell me a joke"}],
+            messages=messages,
             tools=tools,
             tool_choice="required",
         )
