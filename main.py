@@ -7,14 +7,12 @@ import logging
 
 logging.basicConfig(
     level=logging.INFO,  # Set the log level to INFO
-    handlers=[
-        logging.StreamHandler()  # Log messages to the console as well
-    ]
+    handlers=[logging.StreamHandler()],  # Log messages to the console as well
 )
 
-api_key= st.text_input("What is your openai api key to use")
+api_key = st.text_input("What is your openai api key to use")
 if api_key:
-    client= openai.OpenAI(api_key=api_key)
+    client = openai.OpenAI(api_key=api_key)
     # Define the initial system message
     system_message = {
         "role": "system",
@@ -52,11 +50,11 @@ if api_key:
         * If names are provided then make sure to ask what that entity it belongs to.
         * Make reasonable assumptions with fiscal years.
         * Make sure you only ask questions based on the scope defined. 
-        """
+        """,
     }
 
-    #defining the tools
-    tools= [
+    # defining the tools
+    tools = [
         {
             "type": "function",
             "function": {
@@ -70,28 +68,16 @@ if api_key:
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "role": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    },
-                                    "content": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    }
-                                }
+                                    "role": {"type": "string", "enum": [""]},
+                                    "content": {"type": "string", "enum": [""]},
+                                },
                             },
-                            "description": "Messages is a dummy object for function calling. Pass [{\"role\":\"\",\"content\":\"\"}]"
+                            "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
                         }
                     },
-                    "required": [
-                        "messages"
-                    ]
-                }
-            }
+                    "required": ["messages"],
+                },
+            },
         },
         {
             "type": "function",
@@ -106,33 +92,20 @@ if api_key:
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "role": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    },
-                                    "content": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    }
-                                }
+                                    "role": {"type": "string", "enum": [""]},
+                                    "content": {"type": "string", "enum": [""]},
+                                },
                             },
-                            "description": "Messages is a dummy object for function calling. Pass [{\"role\":\"\",\"content\":\"\"}]"
+                            "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
                         },
                         "assistant_question": {
                             "type": "string",
-                            "description": "The follow up question that the LLM will ask to to answer user question."
-                        }
+                            "description": "The follow up question that the LLM will ask to to answer user question.",
+                        },
                     },
-                    "required": [
-                        "messages",
-                        "assistant_question"
-                    ]
-                }
-            }
+                    "required": ["messages", "assistant_question"],
+                },
+            },
         },
         {
             "type": "function",
@@ -147,61 +120,57 @@ if api_key:
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "role": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    },
-                                    "content": {
-                                        "type": "string",
-                                        "enum": [
-                                            ""
-                                        ]
-                                    }
-                                }
+                                    "role": {"type": "string", "enum": [""]},
+                                    "content": {"type": "string", "enum": [""]},
+                                },
                             },
-                            "description": "Messages is a dummy object for function calling. Pass \"messages\":[{\"role\":\"\",\"content\":\"\"}]"
+                            "description": 'Messages is a dummy object for function calling. Pass "messages":[{"role":"","content":""}]',
                         }
                     },
-                    "required": [
-                        "messages"
-                    ]
-                }
-            }
-        }
+                    "required": ["messages"],
+                },
+            },
+        },
     ]
 
     # Define functions for interaction
 
-
-
     def stop_processing(messages):
-        messages.append({"role": "user", "content": """
+        messages.append(
+            {
+                "role": "user",
+                "content": """
         You are a helpful LLM.
         You will be provided with a context and your task is to return a well-defined user question which will summarize the context perfectly.
         - Please return just the user question. You don't need to answer the question.
         - Your only task is to form a question which captures the context provided to you.
         - Make sure to specify the type of the entity along with the name.
-        """})
-        response = client.chat.completions.create(
-            model="gpt-4o", messages=messages
+        """,
+            }
         )
+        response = client.chat.completions.create(model="gpt-4o", messages=messages)
         final_question = json.dumps(response.choices[0].message.content, indent=2)
-        messages=[]
+        messages = []
         return final_question, messages
 
     def ask_for_followup(messages, assistant_question):
-        user_input = st.text_input(assistant_question, key=np.random.randint(low=100001, high=200000, size=1))
+        user_input = st.text_input(
+            assistant_question, key=np.random.randint(low=100001, high=200000, size=1)
+        )
         if st.button("Submit"):
             messages.append({"role": "assistant", "content": assistant_question})
             messages.append({"role": "user", "content": user_input})
             return messages
 
     def ask_user(messages):
-        user_input = st.text_input("What can I help with today?", key=np.random.randint(low=1, high=100000, size=1))
+        user_input = st.text_input(
+            "What can I help with today?",
+            key=np.random.randint(low=1, high=100000, size=1),
+        )
         if st.button("Submit"):
-            messages.append({"role": "assistant", "content": "What can I help with today?"})
+            messages.append(
+                {"role": "assistant", "content": "What can I help with today?"}
+            )
             messages.append({"role": "user", "content": user_input})
             return messages
 
@@ -209,30 +178,114 @@ if api_key:
     st.title("Finance Domain Chat Assistant")
 
     # User input for the question
-    
+
     while True:
-        if "messages" not in st.session_state or st.session_state["messages"]==[]:
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "stop_processing",
+                    "description": "Answer the user question and reset the messages queue",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {"type": "string", "enum": [""]},
+                                        "content": {"type": "string", "enum": [""]},
+                                    },
+                                },
+                                "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
+                            }
+                        },
+                        "required": ["messages"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "ask_for_followup",
+                    "description": "Function which will basically ask for a follow up question if the user question is not clear. There should be a user question before asking for a followup.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {"type": "string", "enum": [""]},
+                                        "content": {"type": "string", "enum": [""]},
+                                    },
+                                },
+                                "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
+                            },
+                            "assistant_question": {
+                                "type": "string",
+                                "description": "The follow up question that the LLM will ask to to answer user question.",
+                            },
+                        },
+                        "required": ["messages", "assistant_question"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "ask_user",
+                    "description": "Function which will be used to ask the user to ask a new question. Should be called when the LLM doesnt have an idea about user question",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {"type": "string", "enum": [""]},
+                                        "content": {"type": "string", "enum": [""]},
+                                    },
+                                },
+                                "description": 'Messages is a dummy object for function calling. Pass "messages":[{"role":"","content":""}]',
+                            }
+                        },
+                        "required": ["messages"],
+                    },
+                },
+            },
+        ]
+        if "messages" not in st.session_state or st.session_state["messages"] == []:
             st.session_state["messages"] = [system_message]
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=st.session_state["messages"],
             tools=tools,
-            tool_choice="required"
+            tool_choice="required",
         )
         response_message = response.choices[0].message
         if response_message.tool_calls:
             function_name = response_message.tool_calls[0].function.name
-            function_params = json.loads(response_message.tool_calls[0].function.arguments)
+            function_params = json.loads(
+                response_message.tool_calls[0].function.arguments
+            )
             if "messages" in function_params:
                 function_params["messages"] = st.session_state["messages"]
-                logging.info(f"current_message_stream:{st.write(function_params['messages'])}")
+                logging.info(f"current_message_stream:{function_params['messages']}")
             st.write(function_name)
             st.write(function_params)
             if function_name == "stop_processing":
-                final_question = eval(f"{function_name}(**{function_params})")
+                final_question, st.session_state["messages"] = eval(
+                    f"{function_name}(**{function_params})"
+                )
                 st.write(final_question)
                 # Here, you would send `final_question` to your model
                 break
             else:
-                st.session_state["messages"] = eval(f"{function_name}(**{function_params})")
-        logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
+                st.session_state["messages"] = eval(
+                    f"{function_name}(**{function_params})"
+                )
+        # logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
