@@ -260,9 +260,10 @@ if api_key:
         ]
         if "messages" not in st.session_state or st.session_state["messages"] == []:
             st.session_state["messages"] = [system_message]
+        messages= st.session_state["messages"]
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=st.session_state["messages"],
+            messages=[{"role":"user","content":"tell me a joke"}],
             tools=tools,
             tool_choice="required",
         )
