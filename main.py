@@ -180,94 +180,17 @@ if api_key:
     # User input for the question
 
     while True:
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "stop_processing",
-                    "description": "Answer the user question and reset the messages queue",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "messages": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "role": {"type": "string", "enum": [""]},
-                                        "content": {"type": "string", "enum": [""]},
-                                    },
-                                },
-                                "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
-                            }
-                        },
-                        "required": ["messages"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "ask_for_followup",
-                    "description": "Function which will basically ask for a follow up question if the user question is not clear. There should be a user question before asking for a followup.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "messages": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "role": {"type": "string", "enum": [""]},
-                                        "content": {"type": "string", "enum": [""]},
-                                    },
-                                },
-                                "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
-                            },
-                            "assistant_question": {
-                                "type": "string",
-                                "description": "The follow up question that the LLM will ask to to answer user question.",
-                            },
-                        },
-                        "required": ["messages", "assistant_question"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "ask_user",
-                    "description": "Function which will be used to ask the user to ask a new question. Should be called when the LLM doesnt have an idea about user question",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "messages": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "role": {"type": "string", "enum": [""]},
-                                        "content": {"type": "string", "enum": [""]},
-                                    },
-                                },
-                                "description": 'Messages is a dummy object for function calling. Pass "messages":[{"role":"","content":""}]',
-                            }
-                        },
-                        "required": ["messages"],
-                    },
-                },
-            },
-        ]
         if "messages" not in st.session_state or st.session_state["messages"] == []:
             st.session_state["messages"] = [system_message]
-        messages= st.session_state["messages"]
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=messages,
+            messages=st.session_state["messages"],
             tools=tools,
             tool_choice="required",
         )
         response_message = response.choices[0].message
+        st.write(response_message)
+        break
         if response_message.tool_calls:
             function_name = response_message.tool_calls[0].function.name
             function_params = json.loads(
