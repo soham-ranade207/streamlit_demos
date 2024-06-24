@@ -145,6 +145,7 @@ if api_key:
         })
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
+             logging.info(f"Function called: {function_name}")
             final_question = json.dumps(response.choices[0].message.content, indent=2)
             return final_question
         except Exception as e:
@@ -202,7 +203,6 @@ if api_key:
                 elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
                     st.session_state["waiting_for_input"] = True
-                st.experimental_rerun()
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
