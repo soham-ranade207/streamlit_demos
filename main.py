@@ -145,21 +145,29 @@ if api_key:
             logging.error(f"Error in stop_processing: {e}")
             return "Error occurred while processing the question.", []
 
-    def process_user_input(messages, question):
-        messages.append({"role": "assistant", "content": question})
+    def process_user_input(question):
         user_input = st.text_input(question, key="user_input")
-        if st.button("Submit"):
-            messages.append({"role": "user", "content": user_input})
-        return messages
+        return user_input
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message]
+    if "waiting_for_input" not in st.session_state:
+        st.session_state["waiting_for_input"] = False
+    if "current_question" not in st.session_state:
+        st.session_state["current_question"] = "What can I help with today?"
 
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
         st.write(f"{message['role'].capitalize()}: {message['content']}")
 
-    while True:
+    if st.session_state["waiting_for_input"]:
+        user_input = process_user_input(st.session_state["current_question"])
+        if st.button("Submit"):
+            st.session_state["messages"].append({"role": "assistant", "content": st.session_state["current_question"]})
+            st.session_state["messages"].append({"role": "user", "content": user_input})
+            st.session_state["waiting_for_input"] = False
+            st.experimental_rerun()
+    else:
         try:
             response = client.chat.completions.create(
                 model="gpt-4o",
@@ -172,27 +180,17 @@ if api_key:
                 function_name = response_message.tool_calls[0].function.name
                 function_params = json.loads(response_message.tool_calls[0].function.arguments)
                 
-                if "messages" in function_params:
-                    function_params["messages"] = st.session_state["messages"]
-                
                 logging.info(f"Function called: {function_name}")
                 logging.info(f"Function parameters: {function_params}")
 
                 if function_name == "stop_processing":
-                    final_question, st.session_state["messages"] = stop_processing(function_params["messages"])
+                    final_question, st.session_state["messages"] = stop_processing(st.session_state["messages"])
                     st.write("Final Question:", final_question)
-                    break
+                    st.session_state["waiting_for_input"] = False
                 elif function_name in ["ask_for_followup", "ask_user"]:
-                    st.session_state["messages"] = process_user_input(
-                        function_params["messages"],
-                        function_params.get("assistant_question", "What can I help with today?")
-                    )
-                    if st.session_state["messages"][-1]["role"] == "user":
-                        break  # Exit the loop to process the new user input
+                    st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
+                    st.session_state["waiting_for_input"] = True
+                st.experimental_rerun()
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
-            break
-
-    st.experimental_rerun()
- 
