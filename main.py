@@ -54,7 +54,8 @@ if api_key:
         * You will always start with asking the user for a question first.
         * If names are provided then make sure to ask what that entity it belongs to.
         * Make reasonable assumptions with fiscal years.
-        * Make sure you only ask questions based on the scope defined. 
+        * Make sure you only ask questions based on the scope defined.
+        * You need to disambiguate based on the dimensions mentioned above. Make sure to clarify it based on the user. 
         """,
     }
 
