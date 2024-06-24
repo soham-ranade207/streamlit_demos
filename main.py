@@ -143,6 +143,7 @@ if api_key:
             "role": "user",
             "content": "Summarize the context as a well-defined user question."
         })
+       
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
             logging.info(f"Response in stop processing called: {response}")
@@ -198,7 +199,7 @@ if api_key:
 
                 if function_name == "stop_processing":
                     final_question = stop_processing(st.session_state["messages"])
-                    st.write("Final Question:", final_question)
+                    session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
                     st.session_state["conversation_ended"] = True
                 elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
