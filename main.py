@@ -2,18 +2,17 @@ import streamlit as st
 import openai
 import json
 import numpy as np
-import time
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,  # Set the log level to INFO
-    handlers=[logging.StreamHandler()],  # Log messages to the console as well
-)
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
-api_key = st.text_input("What is your openai api key to use")
+st.title("Finance Domain Chat Assistant")
+
+api_key = st.text_input("Enter your OpenAI API key:")
 if api_key:
     client = openai.OpenAI(api_key=api_key)
-    # Define the initial system message
+    
+    # (Keep your system_message and tools definitions here)
     system_message = {
         "role": "system",
         "content": """
@@ -133,84 +132,67 @@ if api_key:
         },
     ]
 
-    # Define functions for interaction
-
     def stop_processing(messages):
-        messages.append(
-            {
-                "role": "user",
-                "content": """
-        You are a helpful LLM.
-        You will be provided with a context and your task is to return a well-defined user question which will summarize the context perfectly.
-        - Please return just the user question. You don't need to answer the question.
-        - Your only task is to form a question which captures the context provided to you.
-        - Make sure to specify the type of the entity along with the name.
-        """,
-            }
-        )
-        response = client.chat.completions.create(model="gpt-4o", messages=messages)
-        final_question = json.dumps(response.choices[0].message.content, indent=2)
-        messages = []
-        return final_question, messages
+        messages.append({
+            "role": "user",
+            "content": "Summarize the context as a well-defined user question."
+        })
+        try:
+            response = client.chat.completions.create(model="gpt-4o", messages=messages)
+            final_question = json.dumps(response.choices[0].message.content, indent=2)
+            return final_question, []
+        except Exception as e:
+            logging.error(f"Error in stop_processing: {e}")
+            return "Error occurred while processing the question.", []
 
-    def ask_for_followup(messages, assistant_question):
-        user_input = st.text_input(
-            assistant_question, key=np.random.randint(low=100001, high=200000, size=1)
-        )
+    def process_user_input(messages, question):
+        messages.append({"role": "assistant", "content": question})
+        user_input = st.text_input(question, key="user_input")
         if st.button("Submit"):
-            messages.append({"role": "assistant", "content": assistant_question})
             messages.append({"role": "user", "content": user_input})
-            return messages
+        return messages
 
-    def ask_user(messages):
-        user_input = st.text_input(
-            "What can I help with today?",
-            key=np.random.randint(low=1, high=100000, size=1),
-        )
-        if st.button("Submit"):
-            messages.append(
-                {"role": "assistant", "content": "What can I help with today?"}
-            )
-            messages.append({"role": "user", "content": user_input})
-            return messages
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [system_message]
 
-    # Streamlit app layout
-    st.title("Finance Domain Chat Assistant")
-
-    # User input for the question
+    st.write("Chat History:")
+    for message in st.session_state["messages"][1:]:  # Skip the system message
+        st.write(f"{message['role'].capitalize()}: {message['content']}")
 
     while True:
-        if "messages" not in st.session_state or st.session_state["messages"] == []:
-            st.session_state["messages"] = [system_message]
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=st.session_state["messages"],
-            tools=tools,
-            tool_choice="required",
-        )
-        response_message = response.choices[0].message
-        if response_message.tool_calls:
-            function_name = response_message.tool_calls[0].function.name
-            function_params = json.loads(
-                response_message.tool_calls[0].function.arguments
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=st.session_state["messages"],
+                tools=tools,
+                tool_choice="required",
             )
-            if "messages" in function_params:
-                function_params["messages"] = st.session_state["messages"]
-                st.write(f"current_message_stream:{function_params['messages']}")
-            st.write("=========")
-            st.write(function_name)
-            st.write(function_params)
-            if function_name == "stop_processing":
-                final_question, st.session_state["messages"] = eval(
-                    f"{function_name}(**{function_params})"
-                )
-                st.write(final_question)
-                # Here, you would send `final_question` to your model
-                break
-            else:
-                st.write("=========")
-                st.session_state["messages"] = eval(
-                    f"{function_name}(**{function_params})"
-                )
-                st.write(st.session_state["messages"])
-        # logging.info(f"current_message_stream:{st.write(st.session_state['messages'])}")
+            response_message = response.choices[0].message
+            if response_message.tool_calls:
+                function_name = response_message.tool_calls[0].function.name
+                function_params = json.loads(response_message.tool_calls[0].function.arguments)
+                
+                if "messages" in function_params:
+                    function_params["messages"] = st.session_state["messages"]
+                
+                logging.info(f"Function called: {function_name}")
+                logging.info(f"Function parameters: {function_params}")
+
+                if function_name == "stop_processing":
+                    final_question, st.session_state["messages"] = stop_processing(function_params["messages"])
+                    st.write("Final Question:", final_question)
+                    break
+                elif function_name in ["ask_for_followup", "ask_user"]:
+                    st.session_state["messages"] = process_user_input(
+                        function_params["messages"],
+                        function_params.get("assistant_question", "What can I help with today?")
+                    )
+                    if st.session_state["messages"][-1]["role"] == "user":
+                        break  # Exit the loop to process the new user input
+        except Exception as e:
+            logging.error(f"Error in main loop: {e}")
+            st.error("An error occurred. Please try again.")
+            break
+
+    st.experimental_rerun()
+ 
