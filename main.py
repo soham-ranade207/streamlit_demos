@@ -8,6 +8,12 @@ logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
 st.title("Finance Domain Chat Assistant")
 
+def reset_conversation():
+    st.session_state["messages"] = [system_message]
+    st.session_state["waiting_for_input"] = False
+    st.session_state["current_question"] = "What can I help with today?"
+    st.session_state["conversation_ended"] = False
+
 api_key = st.text_input("Enter your OpenAI API key:")
 if api_key:
     client = openai.OpenAI(api_key=api_key)
@@ -140,10 +146,10 @@ if api_key:
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
             final_question = json.dumps(response.choices[0].message.content, indent=2)
-            return final_question, []
+            return final_question
         except Exception as e:
             logging.error(f"Error in stop_processing: {e}")
-            return "Error occurred while processing the question.", []
+            return "Error occurred while processing the question."
 
     def process_user_input(question):
         user_input = st.text_input(question, key="user_input")
@@ -155,12 +161,18 @@ if api_key:
         st.session_state["waiting_for_input"] = False
     if "current_question" not in st.session_state:
         st.session_state["current_question"] = "What can I help with today?"
+    if "conversation_ended" not in st.session_state:
+        st.session_state["conversation_ended"] = False
 
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
         st.write(f"{message['role'].capitalize()}: {message['content']}")
 
-    if st.session_state["waiting_for_input"]:
+    if st.session_state["conversation_ended"]:
+        if st.button("Start New Conversation"):
+            reset_conversation()
+            st.experimental_rerun()
+    elif st.session_state["waiting_for_input"]:
         user_input = process_user_input(st.session_state["current_question"])
         if st.button("Submit"):
             st.session_state["messages"].append({"role": "assistant", "content": st.session_state["current_question"]})
@@ -184,9 +196,9 @@ if api_key:
                 logging.info(f"Function parameters: {function_params}")
 
                 if function_name == "stop_processing":
-                    final_question, st.session_state["messages"] = stop_processing(st.session_state["messages"])
+                    final_question = stop_processing(st.session_state["messages"])
                     st.write("Final Question:", final_question)
-                    st.session_state["waiting_for_input"] = False
+                    st.session_state["conversation_ended"] = True
                 elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
                     st.session_state["waiting_for_input"] = True
