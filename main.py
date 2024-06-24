@@ -145,7 +145,7 @@ if api_key:
         })
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
-             logging.info(f"Function called: {function_name}")
+            logging.info(f"Response in stop processing called: {response}")
             final_question = json.dumps(response.choices[0].message.content, indent=2)
             return final_question
         except Exception as e:
