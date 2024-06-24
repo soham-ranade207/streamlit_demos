@@ -199,7 +199,7 @@ if api_key:
 
                 if function_name == "stop_processing":
                     final_question = stop_processing(st.session_state["messages"])
-                    session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
+                    st.session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
                     st.session_state["conversation_ended"] = True
                 elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
