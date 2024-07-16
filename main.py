@@ -169,10 +169,15 @@ If the context is valid based on the scope follow the following rules:
             return "Error occurred while processing the question."
 
     def process_user_input(question, options=None):
+        st.write(question)
         if options:
-            return st.radio(question, options, key="user_input_radio")
+            choice = st.radio("Choose an option or select 'Other' to provide your own input:", options + ["Other"])
+            if choice == "Other":
+                return st.text_input("Please provide your own input:")
+            else:
+                return choice
         else:
-            return st.text_input(question, key="user_input_text")
+            return st.text_input("Your response:")
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message]
