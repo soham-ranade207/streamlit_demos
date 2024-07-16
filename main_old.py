@@ -90,7 +90,7 @@ if api_key:
             "type": "function",
             "function": {
                 "name": "ask_for_followup",
-                "description": "Function which will ask for a follow up question if the user question is not clear. Provides options for the user to choose from.",
+                "description": "Function which will basically ask for a follow up question if the user question is not clear. There should be a user question before asking for a followup.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -107,15 +107,10 @@ if api_key:
                         },
                         "assistant_question": {
                             "type": "string",
-                            "description": "The follow up question that the LLM will ask to answer user question.",
-                        },
-                        "options": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "A list of options for the user to choose from.",
+                            "description": "The follow up question that the LLM will ask to to answer user question.",
                         },
                     },
-                    "required": ["messages", "assistant_question", "options"],
+                    "required": ["messages", "assistant_question"],
                 },
             },
         },
@@ -167,11 +162,9 @@ If the context is valid based on the scope follow the following rules:
             logging.error(f"Error in stop_processing: {e}")
             return "Error occurred while processing the question."
 
-    def process_user_input(question, options=None):
-        if options:
-            return st.radio(question, options, key="user_input_radio")
-        else:
-            return st.text_input(question, key="user_input_text")
+    def process_user_input(question):
+        user_input = st.text_input(question, key="user_input")
+        return user_input
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message]
@@ -181,10 +174,6 @@ If the context is valid based on the scope follow the following rules:
         st.session_state["current_question"] = "What can I help with today?"
     if "conversation_ended" not in st.session_state:
         st.session_state["conversation_ended"] = False
-    if "follow_up_options" not in st.session_state:
-        st.session_state["follow_up_options"] = None
-
-
 
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
@@ -195,12 +184,11 @@ If the context is valid based on the scope follow the following rules:
             reset_conversation()
             st.experimental_rerun()
     elif st.session_state["waiting_for_input"]:
-        user_input = process_user_input(st.session_state["current_question"], st.session_state["follow_up_options"])
+        user_input = process_user_input(st.session_state["current_question"])
         if st.button("Submit"):
             st.session_state["messages"].append({"role": "assistant", "content": st.session_state["current_question"]})
             st.session_state["messages"].append({"role": "user", "content": user_input})
             st.session_state["waiting_for_input"] = False
-            st.session_state["follow_up_options"] = None  # Reset options after use
             st.experimental_rerun()
     else:
         try:
@@ -222,12 +210,8 @@ If the context is valid based on the scope follow the following rules:
                     final_question = stop_processing(st.session_state["messages"])
                     st.session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
                     st.session_state["conversation_ended"] = True
-                elif function_name == "ask_for_followup":
+                elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
-                    st.session_state["follow_up_options"] = function_params.get("options")
-                    st.session_state["waiting_for_input"] = True
-                elif function_name == "ask_user":
-                    st.session_state["current_question"] = "What can I help with today?"
                     st.session_state["waiting_for_input"] = True
                 st.experimental_rerun()
         except Exception as e:
