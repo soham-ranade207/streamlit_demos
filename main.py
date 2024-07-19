@@ -17,13 +17,13 @@ def reset_conversation():
 def reset_knowlege_graph():
     st.session_state["knowledge_graph"]={}
 
-if st.sidebar.button("Clear Knowledge_Graph"):
-    reset_knowlege_graph()
-
 
 api_key = st.sidebar.text_input("Enter your OpenAI API key:")
+
 if api_key:
     client = openai.OpenAI(api_key=api_key)
+    if st.sidebar.button("Clear Knowledge_Graph"):
+        reset_knowlege_graph()
     
     # (Keep your system_message and tools definitions here)
     system_message = {
@@ -60,11 +60,12 @@ Your domain is strictly limited to the following tables and their schema:
 Please follow following rules:
 * You will always start with asking the user for a question first.
 * If dangling names are provided which dont refer to specific entities then make sure to ask what that entity it belongs to.
+* You will use the knowledge graph provided to you or you will try to make use of the knowledge graph that you have built along with the user.
 * Make reasonable assumptions with fiscal years. 
-* Make sure you only ask questions based on the scope defined.
-* You can only asnwer questions based on revenues and expenses. Any other finance reference should be rejected or disambiguated.
-* You need to disambiguate based on the dimensions mentioned above. Make sure to clarify it based on the user. 
-* Do not assume similar sounding entities:eg- departments should not be confused with cost centers and profit centers. 
+* Make sure you only ask questions based on the scope defined and the knowledge graph provided to you.
+* You can only asnwer questions based on revenues, expenses, profitability analysis and variance analysis. Any other finance reference should be disambiguated.
+* You need to disambiguate based on the dimensions and the knowledge graph that will be provided to you. Make sure to clarify it with the user.
+* Do not assume similar sounding entities:eg- departments should not be confused with cost centers and profit centers.
         """,
     }
 
@@ -74,7 +75,7 @@ Please follow following rules:
             "type": "function",
             "function": {
                 "name": "stop_processing",
-                "description": "Answer the user question and reset the messages queue",
+                "description": "Answer the user question , add to the knowledge graph and reset the messages queue",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -88,9 +89,17 @@ Please follow following rules:
                                 },
                             },
                             "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
+                        },
+                        "knowledge_piece": {
+                            "type": "object",
+                            "properties": {
+                                    "jargon": {"type": "string"},
+                                    "value": {"type": "string"},
+                                },
+                            "description": 'This will have key value pairs where key is the jargon that we have disambiguated for the user.',
                         }
                     },
-                    "required": ["messages"],
+                    "required": ["messages", "knowledge_piece"],
                 },
             },
         },
@@ -153,7 +162,7 @@ Please follow following rules:
         },
     ]
 
-    def stop_processing(messages):
+    def stop_processing(messages, knowledge_piece):
         messages.append({
             "role": "user",
             "content": """
@@ -173,7 +182,11 @@ If the context is valid based on the scope follow the following rules:
             return final_question
         except Exception as e:
             logging.error(f"Error in stop_processing: {e}")
-            return "Error occurred while processing the question."
+        try:
+            st.session_state['knowledge_graph']= st.session_state['knowledge_graph'].update(knowledge_piece)
+        except:
+            logging.error(f"Error in stop_processing: {e}")
+        return "Error occurred while processing the question."
 
     def process_user_input(question, options=None):
         st.write(question)
@@ -242,7 +255,7 @@ If the context is valid based on the scope follow the following rules:
                 logging.info(f"Function parameters: {function_params}")
 
                 if function_name == "stop_processing":
-                    final_question = stop_processing(st.session_state["messages"])
+                    final_question = stop_processing(st.session_state["messages"], function_params["knowledge_piece"])
                     st.session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
                     st.session_state["conversation_ended"] = True
                 elif function_name == "ask_for_followup":
