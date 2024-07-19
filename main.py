@@ -103,20 +103,18 @@ Please follow following rules:
                         },
                         "knowledge_pieces": {
                             "type": "array",
-                            "properties": {
-                                "knowledge_piece": {
-                                    "type":"object",
-                                    "properties": {
-                                        "jargon":{"type": "string"},
-                                        "value": {"type": "string"},
-                                    }
-                                }
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "jargon": {"type": "string"},
+                                    "value": {"type": "string"},
+                                },
                             },
-                            "description": "This will have key value pairs where key is the jargon that we have disambiguated for the user.",
                         },
+                        "description": "This will have key value pairs where key is the jargon that we have disambiguated for the user.",
                     },
-                    "required": ["messages", "knowledge_piece"],
                 },
+                "required": ["messages", "knowledge_piece"],
             },
         },
         {
@@ -202,7 +200,9 @@ If the context is valid based on the scope follow the following rules:
             logging.error(f"Error in stop_processing: {e}")
         try:
             for knowledge_piece in knowledge_pieces:
-                st.session_state["knowledge_graph"][knowledge_piece["jargon"]] = knowledge_piece["value"]
+                st.session_state["knowledge_graph"][
+                    knowledge_piece["jargon"]
+                ] = knowledge_piece["value"]
         except:
             logging.error(f"Error in stop_processing: {e}")
         return "Error occurred while processing the question."
@@ -225,7 +225,9 @@ If the context is valid based on the scope follow the following rules:
         st.session_state["knowledge_graph"] = {}
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message1]
-        system_message2["content"]= system_message2["content"].format(knowledge_graph= st.session_state["knowledge_graph"])
+        system_message2["content"] = system_message2["content"].format(
+            knowledge_graph=st.session_state["knowledge_graph"]
+        )
         st.session_state["messages"].append(system_message2)
     if "waiting_for_input" not in st.session_state:
         st.session_state["waiting_for_input"] = False
@@ -235,7 +237,6 @@ If the context is valid based on the scope follow the following rules:
         st.session_state["conversation_ended"] = False
     if "follow_up_options" not in st.session_state:
         st.session_state["follow_up_options"] = None
-    
 
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
