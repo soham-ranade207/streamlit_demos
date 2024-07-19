@@ -193,11 +193,11 @@ Please follow following rules:
                 "role": "user",
                 "content": """
 You are an helpful LLM. 
-You will be provided with a context and your task is to return a well defined user question which will summarize the context perfectly if the context is relevant to the scope defined earlier.
+You will be provided with a context and your task is to only return a well defined user question which will summarize the context perfectly if the context is relevant to the scope defined earlier.
 You can either return a well formed question of return an error message specifying why context provided to you isnt relevant.
 If the context is valid based on the scope follow the following rules:
 - Make sure to specify the type of the entity along with the name.
-- Return only the final question.
+- Return only the final question. You dont have to provide any answers. Your task is to only summarize the context into one final user question.
             """,
             }
         )
