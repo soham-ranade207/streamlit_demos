@@ -6,7 +6,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
-
 st.title("Finance Domain Chat Assistant")
 
 def reset_conversation():
@@ -14,9 +13,6 @@ def reset_conversation():
     st.session_state["waiting_for_input"] = False
     st.session_state["current_question"] = "What can I help with today?"
     st.session_state["conversation_ended"] = False
-
-def reset_knowlege_graph():
-    st.session_state["knowledge_graph"]={}
 
 api_key = st.text_input("Enter your OpenAI API key:")
 if api_key:
@@ -193,8 +189,6 @@ If the context is valid based on the scope follow the following rules:
         st.session_state["conversation_ended"] = False
     if "follow_up_options" not in st.session_state:
         st.session_state["follow_up_options"] = None
-    if "knowledge_graph" not in st.session_state:
-        st.session_state["knowledge_graph"] = {}
 
 
 
@@ -206,11 +200,6 @@ If the context is valid based on the scope follow the following rules:
         if st.button("Start New Conversation"):
             reset_conversation()
             st.experimental_rerun()
-    
-    if st.button("Reset Context"):
-        reset_knowlege_graph()
-        st.experimental_rerun()
-
     elif st.session_state["waiting_for_input"]:
         user_input = process_user_input(st.session_state["current_question"], st.session_state["follow_up_options"])
         if st.button("Submit"):
