@@ -29,7 +29,7 @@ if api_key:
         reset_knowlege_graph()
 
     # (Keep your system_message and tools definitions here)
-    system_message = {
+    system_message1 = {
         "role": "system",
         "content": """
 You are an AI chat assistant who is expert in the finance domain. 
@@ -72,6 +72,14 @@ Please follow following rules:
         """,
     }
 
+    system_message2 = {
+        "role": "system",
+        "content": """
+        This is the current knowledge graph to use:
+        {knowledge_graph}
+        """,
+    }
+
     # defining the tools
     tools = [
         {
@@ -93,17 +101,16 @@ Please follow following rules:
                             },
                             "description": 'Messages is a dummy object for function calling. Pass [{"role":"","content":""}]',
                         },
-                        "knowledge_piece": {
-                            "type": "object",
+                        "knowledge_pieces": {
+                            "type": "array",
                             "properties": {
-                                "jargon": {
-                                    "type": "string",
-                                    "description": "The Jargon that was identified",
-                                },
-                                "value": {
-                                    "type": "string",
-                                    "description": "The value for that Jargon",
-                                },
+                                "knowledge_piece": {
+                                    "type":"object",
+                                    "properties": {
+                                        "jargon":{"type": "string"},
+                                        "value": {"type": "string"},
+                                    }
+                                }
                             },
                             "description": "This will have key value pairs where key is the jargon that we have disambiguated for the user.",
                         },
@@ -171,7 +178,7 @@ Please follow following rules:
         },
     ]
 
-    def stop_processing(messages, knowledge_piece):
+    def stop_processing(messages, knowledge_pieces):
         messages.append(
             {
                 "role": "user",
@@ -194,9 +201,8 @@ If the context is valid based on the scope follow the following rules:
         except Exception as e:
             logging.error(f"Error in stop_processing: {e}")
         try:
-            st.session_state["knowledge_graph"] = st.session_state[
-                "knowledge_graph"
-            ].update(knowledge_piece)
+            for knowledge_piece in knowledge_pieces:
+                st.session_state["knowledge_graph"][knowledge_piece["jargon"]] = knowledge_piece["value"]
         except:
             logging.error(f"Error in stop_processing: {e}")
         return "Error occurred while processing the question."
@@ -216,7 +222,9 @@ If the context is valid based on the scope follow the following rules:
             return st.text_input("Your response:")
 
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [system_message]
+        st.session_state["messages"] = [system_message1]
+        system_message2["content"]= system_message2["content"].format(knowledge_graph= st.session_state["knowledge_graph"])
+        st.session_state["messages"].append(system_message2)
     if "waiting_for_input" not in st.session_state:
         st.session_state["waiting_for_input"] = False
     if "current_question" not in st.session_state:
@@ -234,7 +242,6 @@ If the context is valid based on the scope follow the following rules:
 
     st.sidebar.write(f"Current Knowledge Graph")
     for key in st.session_state["knowledge_graph"]:
-
         st.sidebar.write(f"{key}:{st.session_state['knowledge_graph'][key]}")
 
     if st.session_state["conversation_ended"]:
