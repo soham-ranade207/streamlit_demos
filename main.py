@@ -221,6 +221,8 @@ If the context is valid based on the scope follow the following rules:
         else:
             return st.text_input("Your response:")
 
+    if "knowledge_graph" not in st.session_state:
+        st.session_state["knowledge_graph"] = {}
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message1]
         system_message2["content"]= system_message2["content"].format(knowledge_graph= st.session_state["knowledge_graph"])
@@ -233,8 +235,7 @@ If the context is valid based on the scope follow the following rules:
         st.session_state["conversation_ended"] = False
     if "follow_up_options" not in st.session_state:
         st.session_state["follow_up_options"] = None
-    if "knowledge_graph" not in st.session_state:
-        st.session_state["knowledge_graph"] = {}
+    
 
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
