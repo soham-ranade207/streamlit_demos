@@ -6,9 +6,14 @@ import logging
 
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
+if "knowledge_graph" not in st.session_state:
+    st.session_state["knowledge_graph"] = {}
 
 st.title("Finance Domain Chat Assistant")
 
+def reset_knowledge_graph():
+    st.session_state["knowledge_graph"] = {}
+    st.experimental_rerun()
 
 def reset_conversation():
     st.session_state["messages"] = [system_message1]
@@ -20,19 +25,21 @@ def reset_conversation():
     st.session_state["current_question"] = "What can I help with today?"
     st.session_state["conversation_ended"] = False
 
-
-def reset_knowlege_graph():
-    st.session_state["knowledge_graph"] = {}
-
-
 api_key = st.sidebar.text_input("Enter your OpenAI API key:")
 
 if api_key:
     client = openai.OpenAI(api_key=api_key)
-    if st.sidebar.button("Clear Knowledge_Graph"):
-        reset_knowlege_graph()
+    
+    st.sidebar.title("Knowledge Graph")
+    if st.session_state["knowledge_graph"]:
+        for key, value in st.session_state["knowledge_graph"].items():
+            st.sidebar.text_input(key, value, key=f"kg_{key}")
+    else:
+        st.sidebar.write("No entries in the knowledge graph yet.")
 
-    # (Keep your system_message and tools definitions here)
+    if st.sidebar.button("Reset Knowledge Graph"):
+        reset_knowledge_graph()
+        
     system_message1 = {
         "role": "system",
         "content": """
@@ -114,7 +121,7 @@ Please follow following rules:
                                     "value": {"type": "string"},
                                 },
                             },
-                            "description": "This will have key value pairs where key is the jargon that we have disambiguated for the user.",
+                            "description": "These will only be Specifc Jargons that we have helped disambiguate the user. Only include terms that are uncommon",
                         },
                     },
                 },
