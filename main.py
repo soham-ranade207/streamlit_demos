@@ -7,15 +7,18 @@ import logging
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
 
-st.title("Finance Domain Chat Assistant") 
+st.title("Finance Domain Chat Assistant")
+
+
 def reset_conversation():
     st.session_state["messages"] = [system_message]
     st.session_state["waiting_for_input"] = False
     st.session_state["current_question"] = "What can I help with today?"
     st.session_state["conversation_ended"] = False
 
+
 def reset_knowlege_graph():
-    st.session_state["knowledge_graph"]={}
+    st.session_state["knowledge_graph"] = {}
 
 
 api_key = st.sidebar.text_input("Enter your OpenAI API key:")
@@ -24,7 +27,7 @@ if api_key:
     client = openai.OpenAI(api_key=api_key)
     if st.sidebar.button("Clear Knowledge_Graph"):
         reset_knowlege_graph()
-    
+
     # (Keep your system_message and tools definitions here)
     system_message = {
         "role": "system",
@@ -92,8 +95,18 @@ Please follow following rules:
                         },
                         "knowledge_piece": {
                             "type": "object",
-                            "description": 'This will have key value pairs where key is the jargon that we have disambiguated for the user.',
-                        }
+                            "properties": {
+                                "jargon": {
+                                    "type": "string",
+                                    "description": "The Jargon that was identified",
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "The value for that Jargon",
+                                },
+                            },
+                            "description": "This will have key value pairs where key is the jargon that we have disambiguated for the user.",
+                        },
                     },
                     "required": ["messages", "knowledge_piece"],
                 },
@@ -159,18 +172,20 @@ Please follow following rules:
     ]
 
     def stop_processing(messages, knowledge_piece):
-        messages.append({
-            "role": "user",
-            "content": """
+        messages.append(
+            {
+                "role": "user",
+                "content": """
 You are an helpful LLM. 
 You will be provided with a context and your task is to return a well defined user question which will summarize the context perfectly if the context is relevant to the scope defined earlier.
 You can either return a well formed question of return an error message specifying why context provided to you isnt relevant.
 If the context is valid based on the scope follow the following rules:
 - Make sure to specify the type of the entity along with the name.
 - Return only the final question.
-            """
-        })
-       
+            """,
+            }
+        )
+
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
             logging.info(f"Response in stop processing called: {response}")
@@ -179,7 +194,9 @@ If the context is valid based on the scope follow the following rules:
         except Exception as e:
             logging.error(f"Error in stop_processing: {e}")
         try:
-            st.session_state['knowledge_graph']= st.session_state['knowledge_graph'].update(knowledge_piece)
+            st.session_state["knowledge_graph"] = st.session_state[
+                "knowledge_graph"
+            ].update(knowledge_piece)
         except:
             logging.error(f"Error in stop_processing: {e}")
         return "Error occurred while processing the question."
@@ -187,7 +204,10 @@ If the context is valid based on the scope follow the following rules:
     def process_user_input(question, options=None):
         st.write(question)
         if options:
-            choice = st.radio("Choose an option or select 'Other' to provide your own input:", options + ["Other"])
+            choice = st.radio(
+                "Choose an option or select 'Other' to provide your own input:",
+                options + ["Other"],
+            )
             if choice == "Other":
                 return st.text_input("Please provide your own input:")
             else:
@@ -208,15 +228,13 @@ If the context is valid based on the scope follow the following rules:
     if "knowledge_graph" not in st.session_state:
         st.session_state["knowledge_graph"] = {}
 
-
-
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
         st.write(f"{message['role'].capitalize()}: {message['content']}")
-    
+
     st.sidebar.write(f"Current Knowledge Graph")
     for key in st.session_state["knowledge_graph"]:
-        
+
         st.sidebar.write(f"{key}:{st.session_state['knowledge_graph'][key]}")
 
     if st.session_state["conversation_ended"]:
@@ -224,12 +242,15 @@ If the context is valid based on the scope follow the following rules:
         if st.button("Start New Conversation"):
             reset_conversation()
             st.experimental_rerun()
-    
 
     elif st.session_state["waiting_for_input"]:
-        user_input = process_user_input(st.session_state["current_question"], st.session_state["follow_up_options"])
+        user_input = process_user_input(
+            st.session_state["current_question"], st.session_state["follow_up_options"]
+        )
         if st.button("Submit"):
-            st.session_state["messages"].append({"role": "assistant", "content": st.session_state["current_question"]})
+            st.session_state["messages"].append(
+                {"role": "assistant", "content": st.session_state["current_question"]}
+            )
             st.session_state["messages"].append({"role": "user", "content": user_input})
             st.session_state["waiting_for_input"] = False
             st.session_state["follow_up_options"] = None  # Reset options after use
@@ -245,18 +266,28 @@ If the context is valid based on the scope follow the following rules:
             response_message = response.choices[0].message
             if response_message.tool_calls:
                 function_name = response_message.tool_calls[0].function.name
-                function_params = json.loads(response_message.tool_calls[0].function.arguments)
-                
+                function_params = json.loads(
+                    response_message.tool_calls[0].function.arguments
+                )
+
                 logging.info(f"Function called: {function_name}")
                 logging.info(f"Function parameters: {function_params}")
 
                 if function_name == "stop_processing":
-                    final_question = stop_processing(st.session_state["messages"], function_params["knowledge_piece"])
-                    st.session_state["messages"].append({"role":"assistant","content":f"{final_question}"})
+                    final_question = stop_processing(
+                        st.session_state["messages"], function_params["knowledge_piece"]
+                    )
+                    st.session_state["messages"].append(
+                        {"role": "assistant", "content": f"{final_question}"}
+                    )
                     st.session_state["conversation_ended"] = True
                 elif function_name == "ask_for_followup":
-                    st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
-                    st.session_state["follow_up_options"] = function_params.get("options")
+                    st.session_state["current_question"] = function_params.get(
+                        "assistant_question", "What can I help with today?"
+                    )
+                    st.session_state["follow_up_options"] = function_params.get(
+                        "options"
+                    )
                     st.session_state["waiting_for_input"] = True
                 elif function_name == "ask_user":
                     st.session_state["current_question"] = "What can I help with today?"
