@@ -51,7 +51,6 @@ You have these functions at hand:
 - Stop processing which will clear the messages queue. 
 
 Your domain is strictly limited to the following tables and their schema:
-    The names of tables allowed for SQL generation are [ journal, account, fiscal_calendar, customer, supplier ].
     The table schemas below are provided in the format - table_name ( column_name_1 data_type_1, column_name_2 data_type_2, ... ).
     - journal ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str, account_number str, account_name str, account_type str, account_category str, amount decimal(18,2), cost_center_number str, cost_center_name str, profit_center_number str, profit_center_name str, department_number, department_name, purchase_order_number str, supplier_number str, supplier_name str, material_number str, material_name str, material_group_number str, material_group_name str, sales_order_number str, customer_number str, customer_name str, product_number str, product_name str, product_group_number str, product_group_name str, transaction_id str, transaction_type str, document_number str, document_item str ).
     - account ( account_number str, account_name str, account_type str, account_category str ).
