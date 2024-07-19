@@ -11,7 +11,11 @@ st.title("Finance Domain Chat Assistant")
 
 
 def reset_conversation():
-    st.session_state["messages"] = [system_message]
+    st.session_state["messages"] = [system_message1]
+    system_message2["content"] = system_message2["content"].format(
+            knowledge_graph=st.session_state["knowledge_graph"]
+        )
+    st.session_state["messages"].append(system_message2)
     st.session_state["waiting_for_input"] = False
     st.session_state["current_question"] = "What can I help with today?"
     st.session_state["conversation_ended"] = False
