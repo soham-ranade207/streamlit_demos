@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
 if "knowledge_graph" not in st.session_state:
-    st.session_state["knowledge_graph"] = {}
+    st.session_state["knowledge_graph"] = {"dummy":"value"}
 
 st.title("Finance Domain Chat Assistant")
 
@@ -39,7 +39,7 @@ if api_key:
 
     if st.sidebar.button("Reset Knowledge Graph"):
         reset_knowledge_graph()
-        
+
     system_message1 = {
         "role": "system",
         "content": """
@@ -232,8 +232,6 @@ If the context is valid based on the scope follow the following rules:
         else:
             return st.text_input("Your response:")
 
-    if "knowledge_graph" not in st.session_state:
-        st.session_state["knowledge_graph"] = {}
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message1]
         system_message2["content"] = system_message2["content"].format(
