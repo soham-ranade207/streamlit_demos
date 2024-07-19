@@ -201,7 +201,11 @@ If the context is valid based on the scope follow the following rules:
             """,
             }
         )
-
+        try:
+            for knowledge_piece in knowledge_pieces:
+                st.session_state["knowledge_graph"][knowledge_piece["jargon"]] = knowledge_piece["value"]
+        except Exception as e:
+            logging.error(f"Error updating knowledge graph: {e}")
         try:
             response = client.chat.completions.create(model="gpt-4o", messages=messages)
             logging.info(f"Response in stop processing called: {response}")
@@ -209,14 +213,8 @@ If the context is valid based on the scope follow the following rules:
             return final_question
         except Exception as e:
             logging.error(f"Error in stop_processing: {e}")
-        try:
-            for knowledge_piece in knowledge_pieces:
-                st.session_state["knowledge_graph"][
-                    knowledge_piece["jargon"]
-                ] = knowledge_piece["value"]
-        except:
-            logging.error(f"Error in stop_processing: {e}")
         return "Error occurred while processing the question."
+        
 
     def process_user_input(question, options=None):
         st.write(question)
@@ -235,8 +233,8 @@ If the context is valid based on the scope follow the following rules:
     if "messages" not in st.session_state:
         st.session_state["messages"] = [system_message1]
         system_message2["content"] = system_message2["content"].format(
-            knowledge_graph=st.session_state["knowledge_graph"]
-        )
+        knowledge_graph=st.session_state["knowledge_graph"]
+    )
         st.session_state["messages"].append(system_message2)
     if "waiting_for_input" not in st.session_state:
         st.session_state["waiting_for_input"] = False
