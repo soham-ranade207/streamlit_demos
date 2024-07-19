@@ -186,7 +186,7 @@ Please follow following rules:
         },
     ]
 
-    def stop_processing(messages, knowledge_pieces):
+    def stop_processing(messages, knowledge_pieces=[]):
         messages.append(
             {
                 "role": "user",
@@ -286,7 +286,7 @@ If the context is valid based on the scope follow the following rules:
 
                 if function_name == "stop_processing":
                     final_question = stop_processing(
-                        st.session_state["messages"], function_params["knowledge_pieces"]
+                        st.session_state["messages"], function_params.get("knowledge_pieces",[])
                     )
                     st.session_state["messages"].append(
                         {"role": "assistant", "content": f"{final_question}"}
