@@ -92,10 +92,6 @@ Please follow following rules:
                         },
                         "knowledge_piece": {
                             "type": "object",
-                            "properties": {
-                                    "jargon": {"type": "string"},
-                                    "value": {"type": "string"},
-                                },
                             "description": 'This will have key value pairs where key is the jargon that we have disambiguated for the user.',
                         }
                     },
