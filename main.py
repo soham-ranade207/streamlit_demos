@@ -7,8 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
 
-st.title("Finance Domain Chat Assistant")
-
+st.title("Finance Domain Chat Assistant") 
 def reset_conversation():
     st.session_state["messages"] = [system_message]
     st.session_state["waiting_for_input"] = False
@@ -17,6 +16,9 @@ def reset_conversation():
 
 def reset_knowlege_graph():
     st.session_state["knowledge_graph"]={}
+
+if st.sidebar.button("Clear Knowledge_Graph"):
+    reset_knowlege_graph()
 
 
 api_key = st.sidebar.text_input("Enter your OpenAI API key:")
@@ -202,10 +204,14 @@ If the context is valid based on the scope follow the following rules:
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
         st.write(f"{message['role'].capitalize()}: {message['content']}")
+    
+    st.sidebar.write(f"Current Knowledge Graph")
+    for key in st.session_state["knowledge_graph"]:
+        
+        st.sidebar.write(f"{key}:{st.session_state['knowledge_graph'][key]}")
 
     if st.session_state["conversation_ended"]:
-        if st.button("Reset Context"):
-            reset_knowlege_graph()
+
         if st.button("Start New Conversation"):
             reset_conversation()
             st.experimental_rerun()
