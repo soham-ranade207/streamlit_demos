@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
 
 if "knowledge_graph" not in st.session_state:
-    st.session_state["knowledge_graph"] = {"dummy":"value"}
+    st.session_state["knowledge_graph"] = {}
 
 st.title("Finance Domain Chat Assistant")
 
@@ -250,10 +250,6 @@ If the context is valid based on the scope follow the following rules:
     st.write("Chat History:")
     for message in st.session_state["messages"][1:]:  # Skip the system message
         st.write(f"{message['role'].capitalize()}: {message['content']}")
-
-    st.sidebar.write(f"Current Knowledge Graph")
-    for key in st.session_state["knowledge_graph"]:
-        st.sidebar.write(f"{key}:{st.session_state['knowledge_graph'][key]}")
 
     if st.session_state["conversation_ended"]:
 
