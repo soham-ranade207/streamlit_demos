@@ -196,6 +196,7 @@ Please follow following rules:
                 "content": """
 You are an helpful LLM. 
 You will be provided with a context and your task is to only return a well defined user question which will summarize the context perfectly if the context is relevant to the scope defined earlier.
+Based on the knowledge graph you will also substitue the terms to their relevant meaning. 
 You can either return a well formed question of return an error message specifying why context provided to you isnt relevant.
 If the context is valid based on the scope follow the following rules:
 - Make sure to specify the type of the entity along with the name.
