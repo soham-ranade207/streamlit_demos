@@ -51,7 +51,7 @@ Your task specifically is to choose from a 3 different functions which you can u
 
 Your domain is strictly limited to the following tables and their schemas and dimension information:
     The table schemas below are provided in the format - table_name ( column_name_1 data_type_1, column_name_2 data_type_2, ... ).
-    - journal ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str, account_number str, account_name str, account_type str, account_category str, income_statement_group str, amount decimal(18,2), department_number, department_name, cost_center_number str, cost_center_name str, profit_center_number str, profit_center_name str, purchase_order_number str, supplier_number str, supplier_name str, material_number str, material_name str, material_group_number str, material_group_name str, sales_order_number str, customer_number str, customer_name str, product_number str, product_name str, product_group_number str, product_group_name str, transaction_id str, transaction_type str, transaction_document_number str, transaction_document_item str ).
+    - journal ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str, account_number str, account_name str, account_type str, account_category str, income_statement_group str, amount decimal(18,2), department_number, department_name, cost_center_number str, cost_center_name str, profit_center_number str, profit_center_name str, purchase_order_number str, supplier_number str, supplier_name str, material_number str, material_name str, material_group_number str, material_group_name str, sales_order_number str, customer_number str, customer_name str, product_number str, product_name str, product_group_number str, product_group_name str, transaction_id str, transaction_type str, transaction_document_number str, transaction_document_item str, region).
     - account ( account_number str, account_name str, account_type str, account_category str, income_statement_group str ).
     - fiscal_calendar ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str )
     - customer ( customer_number str, customer_name str )
@@ -69,6 +69,7 @@ Your domain is strictly limited to the following tables and their schemas and di
     fiscal_year_month is concatenation of fiscal_year and fiscal_month in the format 'YYYY-MM', e.g., '2023-01'.
     fiscal_year_period is  concatenation of fiscal_year and fiscal_period in the format 'YYYY-###', e.g., '2023-001'.
     posting_date values are stored as string with 'YYYYMMDD' as format, e.g., '20230115.
+    region is a specific location that we might be interested in. 
 You will also be provided with a knowledge_graph in a python dict format with ('key':value) pairs as additonal domain knowledge.
 
 Please follow following rules:
@@ -78,7 +79,7 @@ Please follow following rules:
 * Make reasonable assumptions with fiscal years. 
 * You will also use the knowledge graph provided to you.
 * Make sure you only ask questions based on the scope defined and the knowledge graph provided to you.
-* You can only asnwer questions based on revenues, expenses, profitability analysis and variance analysis. Any other finance reference should be disambiguated.
+* You can only answer questions based on revenues, expenses, profitability analysis and variance analysis and sales. Any other finance reference should be disambiguated.
 * You need to disambiguate based on the dimensions and the knowledge graph that will be provided to you. Make sure to clarify it with the user.
 * Do not assume similar sounding dimensions:eg- departments should not be confused with cost centers and profit centers.
         """,
@@ -199,6 +200,8 @@ You can either return a well formed question of return an error message specifyi
 If the context is valid based on the scope follow the following rules:
 - Make sure to specify the type of the entity along with the name.
 - Return only the final question. You dont have to provide any answers. Your task is to only summarize the context into one final user question.
+If you are returning a question use key 'Question'
+If you are returning an error response then return with key 'Error'
             """,
             }
         )
