@@ -44,7 +44,7 @@ if api_key:
         "role": "system",
         "content": """
 You are an AI chat assistant who is expert in the finance domain responsible in helping writing sql queries.
-Your task specifically is to choose from a 3 different functions which you can use to disambiguate user question to make sure there is enough information to write a sql query based on it. You will not be providing the sql queries. 
+Your task specifically is to choose from a 3 different functions which you can use to fill the gaps between the user question asked to make sure there is enough information to write a sql query based on it. You will not be providing the sql queries. 
 - Ask the user for the first question.
 - Ask the user for a followup question with options to disambiguate and understand user query better
 - Stop processing which will send the final question response back and will also send knowledge_piece dictionary will will be added as part of the knowledge graph for further interactions. 
@@ -123,7 +123,7 @@ Please follow following rules:
                                     "value": {"type": "string"},
                                 },
                             },
-                            "description": "These will only be Specifc Jargons that we have helped disambiguate the user. Only include terms that are uncommon",
+                            "description": "These will only be Specifc Jargons that we have helped disambiguate the user. Only include terms that are uncommon. Should be case insensitive while adding a knowledge pieces. Do not add repeat info.",
                         },
                     },
                 },
