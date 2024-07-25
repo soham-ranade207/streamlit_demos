@@ -51,7 +51,27 @@ Ask the user a follow-up question with options to disambiguate and better unders
 Stop processing, which will send the final question response back and also send a knowledge_piece dictionary to be added to the knowledge graph for further interactions.
 
 Your domain is strictly limited to the following tables and their schemas and dimension information:
-[Include the existing table schemas and information here]
+The table schemas below are provided in the format - table_name ( column_name_1 data_type_1, column_name_2 data_type_2, ... ).
+    - journal ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str, account_number str, account_name str, account_type str, account_category str, income_statement_group str, amount decimal(18,2), department_number, department_name, cost_center_number str, cost_center_name str, profit_center_number str, profit_center_name str, purchase_order_number str, supplier_number str, supplier_name str, material_number str, material_name str, material_group_number str, material_group_name str, sales_order_number str, customer_number str, customer_name str, product_number str, product_name str, product_group_number str, product_group_name str, transaction_id str, transaction_type str, transaction_document_number str, transaction_document_item str, region).
+    - account ( account_number str, account_name str, account_type str, account_category str, income_statement_group str ).
+    - fiscal_calendar ( posting_date str, fiscal_year str, fiscal_quarter str, fiscal_month str, fiscal_period str, fiscal_year_quarter str, fiscal_year_month str, fiscal_year_period str )
+    - customer ( customer_number str, customer_name str )
+    - supplier ( supplier_number str, supplier_name str )
+    The journal table contains only revenue and expense transactions for the company. This is the primary table for most of the queries to fetch and aggregate data from. The account, fiscal_calendar, customer and supplier are reference tables.
+    account_type values are ['Expense', 'Revenue'].
+    account_category values for account_type 'Expense' are: ['Consumption Expense', 'Cost of Goods Sold', 'Depreciation', 'Income Taxes', 'Interest Expense', 'Office Expenses', 'Other Material Expense', 'Other Operating Expenses', 'Other Taxes', 'Personnel Expenses', 'Travel Expenses', 'Utilities'].
+    account_category values for account_type 'Revenue' are: ['Discounts and Rebates', 'Interest Income', 'Other Operating Revenue', 'Sales Revenue'].
+    income_statement_group values are ['Revenue', 'Interest Income', 'Cost of Goods Sold', 'Operating Expense', 'Interest Expense', 'Taxes'].
+    fiscal_year values range from '2018' to '2024'.
+    fiscal_quarter values range are 'Q1' to 'Q4'.
+    fiscal_month values range are '01' to '12'.
+    fiscal_period values range from '001' to '012'.
+    fiscal_year_quarter is concatenation of fiscal_year and fiscal_quarter in the format 'YYYY-QQ', e.g., '2023-Q1'.
+    fiscal_year_month is concatenation of fiscal_year and fiscal_month in the format 'YYYY-MM', e.g., '2023-01'.
+    fiscal_year_period is  concatenation of fiscal_year and fiscal_period in the format 'YYYY-###', e.g., '2023-001'.
+    posting_date values are stored as string with 'YYYYMMDD' as format, e.g., '20230115.
+    region is a specific location that we might be interested in. 
+
 You will also be provided with a knowledge_graph in a Python dict format with ('key':value) pairs as additional domain knowledge.
 Please follow these rules:
 
@@ -115,7 +135,7 @@ Remember, your goal is to gather enough clear and unambiguous information to for
                                     "value": {"type": "string"},
                                 },
                             },
-                            "description": "These will only be Specifc jargon words that we have disambiguated with user inputs. Only include terms that are uncommon. Should be case insensitive while adding a knowledge pieces. Do not add repeat jargon words in the knowledge graph.",
+                            "description": 'These will only be Specifc jargon words that we have disambiguated with user inputs. Only include terms that are uncommon. Should be case insensitive while adding a knowledge pieces. Do not add repeat jargon words in the knowledge graph. Return {} when there is nothing new to add.',
                         },
                     },
                 },
