@@ -325,7 +325,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
                 elif function_name == "ask_user":
                     st.session_state["current_question"] = "What can I help with today?"
                     st.session_state["waiting_for_input"] = True
-                st.rerun()
+                st.rerun(scope="fragment")
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
