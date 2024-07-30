@@ -182,14 +182,14 @@ If the context is valid based on the scope follow the following rules:
     if st.session_state["conversation_ended"]:
         if st.button("Start New Conversation"):
             reset_conversation()
-            st.experimental_rerun()
+            st.rerun()
     elif st.session_state["waiting_for_input"]:
         user_input = process_user_input(st.session_state["current_question"])
         if st.button("Submit"):
             st.session_state["messages"].append({"role": "assistant", "content": st.session_state["current_question"]})
             st.session_state["messages"].append({"role": "user", "content": user_input})
             st.session_state["waiting_for_input"] = False
-            st.experimental_rerun()
+            st.rerun()
     else:
         try:
             response = client.chat.completions.create(
@@ -213,7 +213,7 @@ If the context is valid based on the scope follow the following rules:
                 elif function_name in ["ask_for_followup", "ask_user"]:
                     st.session_state["current_question"] = function_params.get("assistant_question", "What can I help with today?")
                     st.session_state["waiting_for_input"] = True
-                st.experimental_rerun()
+                st.rerun()
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
