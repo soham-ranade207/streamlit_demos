@@ -13,7 +13,7 @@ st.title("Finance Domain Chat Assistant")
 
 def reset_knowledge_graph():
     st.session_state["knowledge_graph"] = {}
-    st.rerun(scope= "app")
+    st.rerun()
 
 def reset_conversation():
     st.session_state["messages"] = [system_message1]
@@ -274,7 +274,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
 
         if st.button("Start New Conversation"):
             reset_conversation()
-            st.rerun(scope= "app")
+            st.rerun()
 
     elif st.session_state["waiting_for_input"]:
         user_input = process_user_input(
@@ -287,7 +287,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
             st.session_state["messages"].append({"role": "user", "content": user_input})
             st.session_state["waiting_for_input"] = False
             st.session_state["follow_up_options"] = None  # Reset options after use
-            st.rerun(scope= "app")
+            st.rerun()
     else:
         try:
             response = client.chat.completions.create(
@@ -325,7 +325,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
                 elif function_name == "ask_user":
                     st.session_state["current_question"] = "What can I help with today?"
                     st.session_state["waiting_for_input"] = True
-                st.rerun(scope="app")
+                st.rerun()
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
