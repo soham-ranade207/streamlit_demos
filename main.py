@@ -3,15 +3,8 @@ import openai
 import json
 import numpy as np
 import logging
-from streamlit.runtime.scriptrunner import StopException, RerunException
 
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
-
-
-if __name__ == "__main__":
-    if st.session_state.get('rerun', False):
-        st.session_state['rerun'] = False
-        st.rerun()
 
 if "knowledge_graph" not in st.session_state:
     st.session_state["knowledge_graph"] = {}
@@ -20,8 +13,7 @@ st.title("Finance Domain Chat Assistant")
 
 def reset_knowledge_graph():
     st.session_state["knowledge_graph"] = {}
-    st.session_state['rerun'] = True
-    st.stop()
+    st.experimental_rerun()
 
 def reset_conversation():
     st.session_state["messages"] = [system_message1]
@@ -282,8 +274,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
 
         if st.button("Start New Conversation"):
             reset_conversation()
-            st.session_state['rerun'] = True
-            st.stop()
+            st.experimental_rerun(scope= "app")
 
     elif st.session_state["waiting_for_input"]:
         user_input = process_user_input(
@@ -295,9 +286,8 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
             )
             st.session_state["messages"].append({"role": "user", "content": user_input})
             st.session_state["waiting_for_input"] = False
-            st.session_state["follow_up_options"] = None
-            st.session_state['rerun'] = True  # Reset options after use
-            st.stop()
+            st.session_state["follow_up_options"] = None  # Reset options after use
+            st.experimental_rerun(scope= "app")
     else:
         try:
             response = client.chat.completions.create(
@@ -335,10 +325,7 @@ Remember, your goal is to create a clear, concise, and well-formed query that ca
                 elif function_name == "ask_user":
                     st.session_state["current_question"] = "What can I help with today?"
                     st.session_state["waiting_for_input"] = True
-                st.session_state['rerun'] = True
-                st.stop()
+                st.experimental_rerun()
         except Exception as e:
             logging.error(f"Error in main loop: {e}")
             st.error("An error occurred. Please try again.")
-
-
