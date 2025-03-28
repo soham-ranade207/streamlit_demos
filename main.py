@@ -215,7 +215,6 @@ Utilize your knowledge base to substitute terms with their most relevant and pre
 Ensure the question specifies the type of entity along with its name, when applicable.
 Format your response as "Question: [Your refined question]"
 Only provide the final refined question. Do not include any answers or explanations.
-If the context is too vague or lacks sufficient information to be answered in an accounting context, respond with "Provided context is too vague or lacks sufficient information to be answered in an accounting context."
 Remember, your goal is to create a clear, concise, and well-formed query that captures the essence of the given context while adhering to the specified guidelines.
             """,
             }
