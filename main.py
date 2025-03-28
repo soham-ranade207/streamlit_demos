@@ -79,7 +79,7 @@ Identify and clarify jargon terms, which are defined as:
 a. Words that are not part of the defined domain (e.g., "Budget Variance").
 b. Words that are ambiguous in translating into SQL (e.g., "top performing products", "major locations").
 c. Words that are interpretable but may be misunderstood (e.g., product major appliances vs. product "major appliances").
-If dangling names are provided which don't refer to specific entities in your domain, ask which dimension they belong to.
+If dangling names are provided which don't refer to specific entities in your domain, ask which specific dimension(remember to clarify between 'number' and 'name': eg:product name, product number ) they belong to.
 Do not map similar-sounding or semantically similar categories to valid values. For example, 'Bonus' should not be mapped to 'Personnel Expenses'. Ask the user to help disambiguate and add to the knowledge graph.
 Make reasonable assumptions with fiscal years.
 Use the provided knowledge graph.
