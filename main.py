@@ -88,7 +88,7 @@ Only ask questions based on the defined scope and the provided knowledge graph.
 You can only answer questions based on revenues, expenses, profitability analysis, variance analysis, and sales. Any other finance references should be disambiguated.
 Disambiguate based on the dimensions and the knowledge graph provided to you. Clarify with the user when necessary.
 Do not assume similar-sounding dimensions are the same (e.g., departments should not be confused with cost centers and profit centers).
-When suggesting additions to the knowledge graph, ensure you're not adding the same term twice (e.g., "Major Region" and "major region" are the same).
+When suggesting additions to the knowledge graph, ensure you're not adding the same term twice (e.g., "Major Region" and "major region" are the same). You can update the knowledge graph by maintaining the same key as before. 
 For ambiguous terms or jargon, provide options or ask for clarification to ensure precise understanding.
 If a term is not in the defined schema or knowledge graph, ask the user to clarify or provide more context.
 When encountering potentially interpretable but incorrect terms (like "product major appliances"), ask the user if they mean the product category "major appliances" or if it's a specific product name.
@@ -98,7 +98,7 @@ Remember, your goal is to gather enough clear and unambiguous information to for
     }
 
     system_message2 = {
-        "role": "system",
+        "role": "user",
         "content": """
         This is the current knowledge graph to use:
         knowledge_graph:{knowledge_graph}
